@@ -69,6 +69,12 @@ def parse_cli_command(cli_input: str) -> Tuple[str, callable, List[str]]:
     """
     if cli_input == ".":
         return "good_bye", COMMANDS["good bye"], []
+    
+    # Check if the input command is the "upcoming birthdays" command
+    if cli_input.lower().startswith("upcoming birthdays"):
+        days_threshold = cli_input.lower().replace("upcoming birthdays", "").strip()
+        return "upcoming birthdays", COMMANDS["upcoming birthdays"], [days_threshold]
+    
     for command_name, func in COMMANDS.items():
         if cli_input.lower().startswith(command_name):
             return command_name, func, cli_input[len(command_name):].strip().split()
@@ -247,6 +253,24 @@ def unknown() -> str:
     """
     return "Unknown command. Try again."
 
+@input_error
+def upcoming_birthdays(*args) -> str:
+    """
+    Method that shows upcoming birthdays within a specified number of days.
+    :param args: Number of days.
+    :return: String with upcoming birthdays.
+    """
+    days_threshold = int(args[0])
+    upcoming_birthdays = contacts.get_contacts_upcoming_birthdays(days_threshold)
+
+    result_str = get_formatted_headers()
+    for contact in upcoming_birthdays:
+        result_str += (f"{contact['name']} | Birthday: {contact['info']['birthday']} | "
+                       f"Days to Birthday: {contact['days_to_birthday']} |\n")
+
+    result_str += "--------------------------+++-----------------------------------\n"
+    return result_str
+
 
 COMMANDS = {
     "hello": hello,
@@ -254,6 +278,7 @@ COMMANDS = {
     "delete": delete_contact,
     "change": change_phone,
     "update birthday": update_birthday,
+    "upcoming birthdays": upcoming_birthdays,
     "phone": find_contact_phone,
     "show all": show_all,
     "good bye": good_bye,
